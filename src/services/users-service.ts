@@ -56,4 +56,8 @@ export class UsersService {
     const { password, accessToken, ...userWithoutSensitiveInfo } = user;
     return userWithoutSensitiveInfo;
   }
+
+  async logout(token: string) {
+    await db.delete(sessions).where(eq(sessions.token, token));
+  }
 }

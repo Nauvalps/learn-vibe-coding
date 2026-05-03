@@ -15,6 +15,12 @@ export const usersRoutes = new Elysia()
       .get("/verify", usersController.verify)
   )
   .group("/api/users", (app) =>
-    app.get("/current", usersController.current)
+    app
+      .get("/current", usersController.current)
+      .delete("/logout", usersController.logout, {
+        body: t.Object({
+          token: t.String(),
+        }),
+      })
   );
 
