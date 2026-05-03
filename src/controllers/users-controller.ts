@@ -107,4 +107,21 @@ export class UsersController {
       };
     }
   }
+
+  async logout({ body, set }: any) {
+    try {
+      const { token } = body;
+      await usersService.logout(token);
+      set.status = 200;
+      return {
+        data: "OK",
+      };
+    } catch (error: any) {
+      set.status = 400;
+      return {
+        message: "Logout failed",
+        error: error.message || "Failed to logout",
+      };
+    }
+  }
 }

@@ -107,6 +107,21 @@ async function runTest() {
     throw new Error("Negative test for invalid token failed");
   }
 
+  console.log("\nTesting /api/users/logout with valid token...");
+  const logoutResponse = await app.handle(
+    new Request("http://localhost:3000/api/users/logout", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+  );
+  const logoutData: any = await logoutResponse.json();
+  console.log("Logout Response Status:", logoutResponse.status);
+  console.log("Logout Response Body:", logoutData);
+  if (logoutResponse.status !== 200 || logoutData.data !== "OK") {
+    throw new Error("Logout test failed");
+  }
+
   console.log("\nAll tests (positive & negative) passed successfully! 🎉");
   process.exit(0);
 }
