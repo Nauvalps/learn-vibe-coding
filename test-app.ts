@@ -55,7 +55,59 @@ async function runTest() {
     throw new Error("Verification test failed");
   }
 
-  console.log("\nAll tests passed successfully! 🎉");
+  console.log("\nTesting /api/users/current with Bearer access token...");
+  const currentResponse = await app.handle(
+    new Request("http://localhost:3000/api/users/current", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+  );
+
+  const currentData: any = await currentResponse.json();
+  console.log("Current user Response Status:", currentResponse.status);
+  console.log("Current user Response Body:", currentData);
+
+  if (currentResponse.status !== 200 || currentData.data.email !== "test@example.com") {
+    throw new Error("Get Current User test failed");
+  }
+
+  console.log("\nTesting NEGATIVE Scenario: /users/login with wrong password...");
+  const wrongPassResponse = await app.handle(
+    new Request("http://localhost:3000/users/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "wrongpassword",
+      }),
+    })
+  );
+  const wrongPassData: any = await wrongPassResponse.json();
+  console.log("Wrong password Response Status:", wrongPassResponse.status);
+  console.log("Wrong password Response Body:", wrongPassData);
+  if (wrongPassResponse.status !== 401 || wrongPassData.message !== "Login failed") {
+    throw new Error("Negative test for wrong password failed");
+  }
+
+  console.log("\nTesting NEGATIVE Scenario: /api/users/current with invalid token...");
+  const invalidTokenResponse = await app.handle(
+    new Request("http://localhost:3000/api/users/current", {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer invalid-token"
+      }
+    })
+  );
+  const invalidTokenData: any = await invalidTokenResponse.json();
+  console.log("Invalid token Response Status:", invalidTokenResponse.status);
+  console.log("Invalid token Response Body:", invalidTokenData);
+  if (invalidTokenResponse.status !== 401 || invalidTokenData.message !== "Unauthorized") {
+    throw new Error("Negative test for invalid token failed");
+  }
+
+  console.log("\nAll tests (positive & negative) passed successfully! 🎉");
   process.exit(0);
 }
 

@@ -45,4 +45,15 @@ export class UsersService {
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
+
+  async getCurrentUser(token: string) {
+    const [user] = await db.select().from(users).where(eq(users.accessToken, token)).limit(1);
+
+    if (!user) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    const { password, accessToken, ...userWithoutSensitiveInfo } = user;
+    return userWithoutSensitiveInfo;
+  }
 }

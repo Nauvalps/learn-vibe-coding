@@ -74,4 +74,37 @@ export class UsersController {
       };
     }
   }
+
+  async current({ headers, set }: any) {
+    try {
+      const authHeader = headers["authorization"] || "";
+      const token = authHeader.replace("Bearer ", "");
+
+      if (!token) {
+        set.status = 401;
+        return {
+          message: "Unauthorized",
+          data: {
+            code: "UNAUTHORIZED",
+            message: "Invalid or expired token",
+          },
+        };
+      }
+
+      const user = await usersService.getCurrentUser(token);
+      set.status = 200;
+      return {
+        data: user,
+      };
+    } catch (error: any) {
+      set.status = 401;
+      return {
+        message: "Unauthorized",
+        data: {
+          code: "UNAUTHORIZED",
+          message: "Invalid or expired token",
+        },
+      };
+    }
+  }
 }
