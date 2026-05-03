@@ -136,6 +136,26 @@ async function runTest() {
     throw new Error("Logout test failed");
   }
 
+  console.log("\nTesting NEGATIVE Scenario: /users/register with 300 characters name...");
+  const longName = "a".repeat(300);
+  const registerLongNameResponse = await app.handle(
+    new Request("http://localhost:3000/users/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: longName,
+        email: "longname@example.com",
+        password: "securepassword",
+      }),
+    })
+  );
+  
+  console.log("Register long name Response Status:", registerLongNameResponse.status);
+  
+  if (registerLongNameResponse.status !== 400 && registerLongNameResponse.status !== 422) {
+    throw new Error("Negative test for long name registration failed. Expected 400 or 422 status.");
+  }
+
   console.log("\nAll tests (positive & negative) passed successfully! 🎉");
   process.exit(0);
 }

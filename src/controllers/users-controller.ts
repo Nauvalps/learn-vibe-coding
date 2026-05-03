@@ -20,6 +20,10 @@ export class UsersController {
 
       const user = await usersService.createUser({ name, email, password } as any);
 
+      if (!user) {
+        throw new Error("Failed to create user");
+      }
+
       return {
         message: "User created successfully",
         user: {
