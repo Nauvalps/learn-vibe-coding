@@ -91,10 +91,12 @@ export class UsersController {
         };
       }
 
-      const user = await usersService.getCurrentUser(token);
+      const user = await usersService.verify(token);
+      const { accessToken, ...safeUser } = user as any;
+
       set.status = 200;
       return {
-        data: user,
+        data: safeUser,
       };
     } catch (error: any) {
       set.status = 401;
