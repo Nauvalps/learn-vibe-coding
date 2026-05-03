@@ -46,18 +46,8 @@ export class UsersService {
     return userWithoutPassword;
   }
 
-  async getCurrentUser(token: string) {
-    const [user] = await db.select().from(users).where(eq(users.accessToken, token)).limit(1);
-
-    if (!user) {
-      throw new Error("UNAUTHORIZED");
-    }
-
-    const { password, accessToken, ...userWithoutSensitiveInfo } = user;
-    return userWithoutSensitiveInfo;
-  }
-
   async logout(token: string) {
     await db.delete(sessions).where(eq(sessions.token, token));
+    await db.update(users).set({ accessToken: null }).where(eq(users.accessToken, token));
   }
 }
