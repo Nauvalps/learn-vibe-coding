@@ -16,4 +16,3 @@ export const sessions = mysqlTable("sessions", {
   createdAt: timestamp("created_at").defaultNow(),
   expiredAt: timestamp("expired_at"),
 });
-

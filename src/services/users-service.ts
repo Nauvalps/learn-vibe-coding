@@ -1,8 +1,29 @@
 import { db } from "../db";
-import { users, sessions } from "../db/schema";
+import { users, sessions } from "../models/users-model";
 import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export class UsersService {
+  async findUserByEmail(email: string) {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createUser(data: typeof users.$inferInsert) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const result = await db.insert(users).values({
+      ...data,
+      password: hashedPassword,
+    });
+    
+    const [createdUser] = await db.select().from(users).where(eq(users.id, result[0].insertId)).limit(1);
+    return createdUser;
+  }
+
+  async verifyPassword(password: string, hash: string) {
+    return await bcrypt.compare(password, hash);
+  }
+
   async login(email: string, password: string) {
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
@@ -10,7 +31,8 @@ export class UsersService {
       throw new Error("USER_NOT_FOUND");
     }
 
-    if (user.password !== password) {
+    const isValid = await this.verifyPassword(password, user.password);
+    if (!isValid) {
       throw new Error("INVALID_CREDENTIALS");
     }
 
@@ -51,3 +73,5 @@ export class UsersService {
     await db.update(users).set({ accessToken: null }).where(eq(users.accessToken, token));
   }
 }
+
+export const usersService = new UsersService();

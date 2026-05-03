@@ -1,6 +1,6 @@
 import { app } from "./src/index";
 import { db } from "./src/db";
-import { users, sessions } from "./src/db/schema";
+import { users, sessions } from "./src/models/users-model";
 import { eq } from "drizzle-orm";
 
 async function runTest() {
@@ -10,14 +10,28 @@ async function runTest() {
   await db.delete(sessions);
   await db.delete(users).where(eq(users.email, "test@example.com"));
 
-  // Create test user
-  await db.insert(users).values({
-    name: "Test User",
-    email: "test@example.com",
-    password: "securepassword",
-  });
+  console.log("Testing /users/register...");
+  const registerResponse = await app.handle(
+    new Request("http://localhost:3000/users/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "TestUser",
+        email: "test@example.com",
+        password: "securepassword",
+      }),
+    })
+  );
 
-  console.log("Testing /users/login...");
+  const registerData: any = await registerResponse.json();
+  console.log("Register Response Status:", registerResponse.status);
+  console.log("Register Response Body:", registerData);
+
+  if (registerResponse.status !== 200 || !registerData.user) {
+    throw new Error("Register test failed");
+  }
+
+  console.log("\nTesting /users/login...");
   
   const loginResponse = await app.handle(
     new Request("http://localhost:3000/users/login", {

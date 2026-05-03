@@ -1,8 +1,40 @@
-import { UsersService } from "../services/users-service";
-
-const usersService = new UsersService();
+import { usersService } from "../services/users-service";
 
 export class UsersController {
+  async register({ body, set }: any) {
+    try {
+      const { name, email, password } = body;
+
+      // Check if user already exists
+      const existingUser = await usersService.findUserByEmail(email);
+      if (existingUser) {
+        set.status = 409;
+        return {
+          message: "User created failed",
+          error: {
+            code: "USER_ALREADY_EXISTS",
+            message: "User already exists",
+          },
+        };
+      }
+
+      const user = await usersService.createUser({ name, email, password } as any);
+
+      return {
+        message: "User created successfully",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      };
+    } catch (error) {
+      console.error(error);
+      set.status = 500;
+      return { message: "Internal server error" };
+    }
+  }
+
   async login({ body, set }: any) {
     try {
       const { email, password } = body;
@@ -127,3 +159,5 @@ export class UsersController {
     }
   }
 }
+
+export const usersController = new UsersController();
